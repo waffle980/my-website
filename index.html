@@ -35,5 +35,128 @@
 
   <h2>下一个小目标</h2>
   <p>学会给网页添加一张自己喜欢的图片。</p>
+<section id="account-area" style="margin-top: 48px;">
+  <hr>
+  <h2>我的账号</h2>
+
+  <p id="account-state">正在读取登录状态……</p>
+
+  <form id="account-form">
+    <p>
+      <label for="account-email">邮箱</label><br>
+      <input
+        id="account-email"
+        type="email"
+        autocomplete="email"
+        required
+      >
+    </p>
+
+    <p>
+      <label for="account-password">密码（至少 8 位）</label><br>
+      <input
+        id="account-password"
+        type="password"
+        minlength="8"
+        autocomplete="current-password"
+        required
+      >
+    </p>
+
+    <button type="submit" value="register">注册</button>
+    <button type="submit" value="login">登录</button>
+  </form>
+
+  <button id="logout-button" type="button" hidden>退出登录</button>
+
+  <p id="account-message" role="status"></p>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+  // 只需要替换下面两行引号里的内容
+  const projectUrl = "https://tnrbpnahznauvlxaufzo.supabase.co";
+  const publishableKey = "sb_publishable_cmQ8isqFAxTBDjx2zUzypw_KMkRHU1h";
+
+  const client = window.supabase.createClient(
+    projectUrl,
+    publishableKey
+  );
+
+  const form = document.getElementById("account-form");
+  const emailInput = document.getElementById("account-email");
+  const passwordInput = document.getElementById("account-password");
+  const state = document.getElementById("account-state");
+  const message = document.getElementById("account-message");
+  const logoutButton = document.getElementById("logout-button");
+
+  // 登录、退出或重新打开网页时，更新界面
+  client.auth.onAuthStateChange((event, session) => {
+    const loggedIn = Boolean(session);
+
+    form.hidden = loggedIn;
+    logoutButton.hidden = !loggedIn;
+
+    state.textContent = loggedIn
+      ? "当前登录：" + session.user.email
+      : "你还没有登录";
+  });
+
+  async function handleAccount(action) {
+    const buttons = document.querySelectorAll("#account-area button");
+    buttons.forEach(button => button.disabled = true);
+    message.textContent = "正在处理，请稍等……";
+
+    try {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (action === "register") {
+        const { data, error } = await client.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: "https://waffle980.github.io/my-website/"
+          }
+        });
+
+        if (error) throw error;
+
+        message.textContent = data.session
+          ? "注册成功，已登录。"
+          : "注册请求已提交，请到邮箱查收确认邮件。";
+      } else if (action === "login") {
+        const { error } = await client.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) throw error;
+        message.textContent = "登录成功。";
+      } else if (action === "logout") {
+        const { error } = await client.auth.signOut();
+
+        if (error) throw error;
+        message.textContent = "已退出登录。";
+      }
+
+      passwordInput.value = "";
+    } catch (error) {
+      message.textContent = "操作未完成：" + error.message;
+    } finally {
+      buttons.forEach(button => button.disabled = false);
+    }
+  }
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    handleAccount(event.submitter.value);
+  });
+
+  logoutButton.addEventListener("click", () => {
+    handleAccount("logout");
+  });
+</script>
 </body>
 </html>
