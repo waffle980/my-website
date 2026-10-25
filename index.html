@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我的第一个网站</title>
+  <title>购物冷静箱</title>
   <style>
     body {
       margin: 0;
@@ -67,6 +67,9 @@
   </form>
 
   <p id="shopping-message" role="status"></p>
+<h2>我的冷静箱</h2>
+<p id="shopping-list-status" role="status"></p>
+<div id="shopping-list"></div>
 </section>
 <section id="account-area" style="margin-top: 48px;">
   <hr>
@@ -240,12 +243,136 @@
       shoppingForm.reset();
       shoppingMessage.textContent =
         "已放进冷静箱！这件商品的冷静期是三天。";
+loadShoppingItems();
     } catch (error) {
       shoppingMessage.textContent = "保存未完成：" + error.message;
     } finally {
       saveItemButton.disabled = false;
     }
   });
+</script>
+<script>
+  const shoppingList = document.getElementById("shopping-list");
+  const shoppingListStatus =
+    document.getElementById("shopping-list-status");
+
+  let shoppingListUserId = null;
+  let shoppingRequest = 0;
+  let savedItems = [];
+
+  // 把剩余时间转成容易阅读的文字
+  function coolingTimeText(item) {
+    if (item.status === "bought") return "已购买";
+    if (item.status === "skipped") return "已经不想买了";
+
+    const remaining =
+      new Date(item.cooling_until).getTime() - Date.now();
+
+    if (remaining <= 0) {
+      return "冷静期已结束，现在还想买吗？";
+    }
+
+    const totalMinutes = Math.ceil(remaining / 60000);
+    const days = Math.floor(totalMinutes / 1440);
+    const hours = Math.floor((totalMinutes % 1440) / 60);
+    const minutes = totalMinutes % 60;
+
+    return `还需冷静：${days}天 ${hours}小时 ${minutes}分钟`;
+  }
+
+  // 用文字安全地填充卡片
+  function addShoppingText(card, tag, text) {
+    const element = document.createElement(tag);
+    element.textContent = text;
+    element.style.whiteSpace = "pre-wrap";
+    card.appendChild(element);
+  }
+
+  function renderShoppingItems() {
+    shoppingList.replaceChildren();
+
+    if (savedItems.length === 0) {
+      shoppingList.textContent = "冷静箱还是空的，添加第一件商品吧。";
+      return;
+    }
+
+    savedItems.forEach(item => {
+      const card = document.createElement("article");
+
+      card.style.cssText =
+        "margin:16px 0;padding:20px;background:white;" +
+        "border:1px solid #dbe2ea;border-radius:16px;" +
+        "overflow-wrap:anywhere;";
+
+      addShoppingText(card, "h3", item.name);
+      addShoppingText(
+        card,
+        "p",
+        "价格：¥" + Number(item.price).toFixed(2)
+      );
+      addShoppingText(
+        card,
+        "p",
+        "想买的理由：" + (item.reason || "还没填写")
+      );
+      addShoppingText(card, "p", coolingTimeText(item));
+
+      shoppingList.appendChild(card);
+    });
+  }
+
+  // 从数据库读取当前账号的商品
+  async function loadShoppingItems() {
+    const owner = shoppingListUserId;
+    if (!owner) return;
+
+    const request = ++shoppingRequest;
+    shoppingListStatus.textContent = "正在读取商品……";
+
+    try {
+      const { data, error } = await client
+        .from("shopping_items")
+        .select("id, name, price, reason, cooling_until, status")
+        .eq("user_id", owner)
+        .order("created_at", { ascending: false });
+
+      // 读取期间若已退出或切换账号，丢弃旧结果
+      if (request !== shoppingRequest) return;
+      if (error) throw error;
+
+      savedItems = data;
+      renderShoppingItems();
+      shoppingListStatus.textContent = "";
+    } catch (error) {
+      if (request !== shoppingRequest) return;
+
+      shoppingListStatus.textContent =
+        "读取未完成：" + error.message;
+    }
+  }
+
+  // 登录后读取；退出或切换账号时清空旧内容
+  client.auth.onAuthStateChange((event, session) => {
+    const nextUserId = session ? session.user.id : null;
+    if (nextUserId === shoppingListUserId) return;
+
+    shoppingListUserId = nextUserId;
+    shoppingRequest++;
+    savedItems = [];
+    shoppingList.replaceChildren();
+    shoppingListStatus.textContent = "";
+
+    if (nextUserId) {
+      setTimeout(() => loadShoppingItems(), 0);
+    }
+  });
+
+  // 每分钟更新一次卡片上的剩余时间
+  setInterval(() => {
+    if (shoppingListUserId) {
+      renderShoppingItems();
+    }
+  }, 60000);
 </script>
 </body>
 </html>
