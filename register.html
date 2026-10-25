@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>创建账号 · 购物冷静箱</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    body {
+      margin: 0;
+      padding: 48px 18px;
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      color: #57434e;
+      background-color: #fff8f2;
+      background-image: radial-gradient(#edd9d5 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    main {
+      width: 100%;
+      max-width: 460px;
+      margin: 0 auto;
+      padding: 32px;
+      border: 1px solid #ead8dc;
+      border-radius: 28px;
+      background: #fffdfb;
+      box-shadow: 0 12px 40px #98616f12;
+    }
+
+    .bear {
+      text-align: center;
+      font-size: 42px;
+    }
+
+    h1 {
+      margin: 16px 0 10px;
+      text-align: center;
+      font-size: 27px;
+      color: #704455;
+    }
+
+    .intro {
+      margin-bottom: 28px;
+      text-align: center;
+      color: #7c6872;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    label {
+      margin-top: 6px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    input {
+      width: 100%;
+      min-width: 0;
+      padding: 13px 15px;
+      border: 1.5px solid #efdae0;
+      border-radius: 14px;
+      background: #fff8fa;
+      color: #57434e;
+      font: inherit;
+    }
+
+    input:focus {
+      outline: 3px solid #f7dce5;
+      border-color: #b94265;
+    }
+
+    button {
+      margin-top: 14px;
+      padding: 15px;
+      border: 0;
+      border-radius: 16px;
+      background: #b94265;
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: wait;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid #754f97;
+      outline-offset: 4px;
+    }
+
+    .back {
+      display: block;
+      margin-top: 22px;
+      text-align: right;
+      color: #705780;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .back:hover {
+      text-decoration: underline;
+    }
+
+    #register-message {
+      font-size: 14px;
+      line-height: 1.8;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 480px) {
+      main {
+        padding: 26px 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <div class="bear" aria-hidden="true">🧸</div>
+    <h1>创建你的小箱子</h1>
+    <p class="intro">收好心动，也留一点时间给自己。</p>
+
+    <form id="registration-form">
+      <label for="registration-email">邮箱</label>
+      <input
+        id="registration-email"
+        type="email"
+        autocomplete="email"
+        required
+      >
+
+      <label for="registration-password">设置密码（至少 8 位）</label>
+      <input
+        id="registration-password"
+        type="password"
+        minlength="8"
+        autocomplete="new-password"
+        required
+      >
+
+      <label for="registration-confirm">再输入一次密码</label>
+      <input
+        id="registration-confirm"
+        type="password"
+        minlength="8"
+        autocomplete="new-password"
+        required
+      >
+
+      <button id="create-account-button" type="submit">
+        创建账号
+      </button>
+    </form>
+
+    <p id="register-message" role="status"></p>
+
+    <a class="back" href="./">
+      已有账号？返回登录 →
+    </a>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    // 填入与 index.html 中相同的两项信息
+    const projectUrl = "https://tnrbpnahznauvlxaufzo.supabase.co
+";
+    const publishableKey = "sb_publishable_cmQ8isqFAxTBDjx2zUzypw_KMkRHU1h
+";
+
+    const registrationForm =
+      document.getElementById("registration-form");
+    const registrationMessage =
+      document.getElementById("register-message");
+    const createAccountButton =
+      document.getElementById("create-account-button");
+
+    let registrationClient;
+
+    try {
+      registrationClient = window.supabase.createClient(
+        projectUrl,
+        publishableKey
+      );
+    } catch (error) {
+      createAccountButton.disabled = true;
+      registrationMessage.textContent =
+        "连接未完成，请检查项目地址、公开密钥和网络连接。";
+    }
+
+    registrationForm.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      if (!registrationClient) return;
+
+      const email =
+        document.getElementById("registration-email").value.trim();
+      const password =
+        document.getElementById("registration-password").value;
+      const confirmPassword =
+        document.getElementById("registration-confirm").value;
+
+      if (password !== confirmPassword) {
+        registrationMessage.textContent =
+          "两次输入的密码不一致，请检查一下。";
+        return;
+      }
+
+      createAccountButton.disabled = true;
+      registrationMessage.textContent = "正在提交注册……";
+
+      try {
+        const { data, error } =
+          await registrationClient.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo:
+                "https://waffle980.github.io/my-website/"
+            }
+          });
+
+        if (error) throw error;
+
+        if (data.session) {
+          window.location.assign("./");
+          return;
+        }
+
+        registrationForm.reset();
+        registrationForm.hidden = true;
+        registrationMessage.textContent =
+          "注册请求已提交，请查收确认邮件，点击邮件中的链接完成验证。" +
+          "如果这个邮箱已经注册过，请直接返回登录。";
+      } catch (error) {
+        registrationMessage.textContent =
+          "注册未完成：" + error.message;
+      } finally {
+        createAccountButton.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

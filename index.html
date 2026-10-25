@@ -389,6 +389,11 @@
   text-decoration: underline;
   text-underline-offset: 4px;
 }
+
+#account-form #register-button {
+  text-align: right;
+  text-decoration: none;
+}
 </style>
 </head>
 <body>
@@ -485,10 +490,9 @@
   登录
 </button>
 
-<button id="register-button" type="button">
+<a id="register-button" href="./register.html">
   没有账号？点击注册
-</button>
-  </form>
+</a>  </form>
 
   <button id="logout-button" type="button" hidden>退出登录</button>
 
@@ -578,13 +582,6 @@ form.addEventListener("submit", event => {
   handleAccount("login");
 });
 
-// 注册只通过点击右下角文字触发
-document.getElementById("register-button")
-  .addEventListener("click", () => {
-    if (form.reportValidity()) {
-      handleAccount("register");
-    }
-  });
 
   logoutButton.addEventListener("click", () => {
     handleAccount("logout");
