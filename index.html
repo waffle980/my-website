@@ -3,27 +3,409 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>购物冷静箱</title>
+  <title>购物冷静箱 · 给心动一点时间</title>
   <style>
+  :root {
+    --ink: #57434e;
+    --muted: #7c6872;
+    --pink: #b94265;
+    --line: #efdae0;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  /* 保证退出登录后，需要隐藏的区域仍然隐藏 */
+  [hidden] {
+    display: none !important;
+  }
+
+  body {
+    margin: 0;
+    padding: 48px 20px 72px;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    color: var(--ink);
+    text-align: center;
+    background-color: #fff8f2;
+    background-image: radial-gradient(#edd9d5 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  p {
+    line-height: 1.8;
+  }
+
+  h2 {
+    font-size: 23px;
+    letter-spacing: 1px;
+  }
+
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
+
+  button {
+    padding: 12px 20px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--pink);
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px #b9426525;
+  }
+
+  button:disabled {
+    opacity: 0.55;
+    cursor: wait;
+  }
+
+  button:focus-visible {
+    outline: 3px solid #754f97;
+    outline-offset: 4px;
+  }
+
+  input,
+  textarea {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 13px 15px;
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    background: #fffdfb;
+    color: var(--ink);
+  }
+
+  input:focus,
+  textarea:focus {
+    outline: 3px solid #f7dce5;
+    border-color: var(--pink);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #8a747e;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .hero {
+    max-width: 800px;
+    margin: 0 auto 42px;
+  }
+
+  .brand {
+    display: inline-block;
+    padding: 9px 18px;
+    border: 1px solid #ead2d9;
+    border-radius: 999px;
+    background: #fffdfb;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+
+  .hero h1 {
+    margin: 23px 0 14px;
+    font-size: clamp(30px, 6vw, 48px);
+    line-height: 1.4;
+    color: #704455;
+    letter-spacing: 2px;
+  }
+
+  .hero p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 16px;
+  }
+
+  .hero-note {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    background: #f0e9f7;
+    color: #705780;
+    font-size: 13px;
+  }
+
+  #shopping-area {
+    position: relative;
+    width: 100%;
+    max-width: 960px !important;
+    margin: 32px auto !important;
+    padding: 32px;
+    border: 1px solid #ead8dc;
+    border-radius: 28px;
+    background: #fffdfb;
+    box-shadow: 0 12px 40px #98616f0c;
+  }
+
+  #shopping-area::before {
+    content: "慢慢挑，也很好 ♡";
+    position: absolute;
+    top: -15px;
+    right: 24px;
+    padding: 8px 14px;
+    border: 1px solid #ebd59d;
+    border-radius: 10px;
+    background: #fff0bd;
+    color: #795b28;
+    font-size: 13px;
+    transform: rotate(4deg);
+  }
+
+  #shopping-area > h2:first-child::before {
+    content: "🛍️ ";
+  }
+
+  #shopping-area > p {
+    color: var(--muted);
+  }
+
+  #shopping-form {
+    max-width: 540px;
+    margin: 26px auto 32px;
+    padding: 22px;
+    border: 1px dashed #e9c9d3;
+    border-radius: 20px;
+    background: #fff6f7;
+  }
+
+  #shopping-form label {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  #save-item-button {
+    margin-top: 6px;
+  }
+
+  #shopping-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 18px;
+    margin-top: 20px;
+  }
+
+  #shopping-list article {
+    margin: 0 !important;
+    padding: 24px !important;
+    border: 1px solid #edd9df !important;
+    border-radius: 22px !important;
+    background: #fff8fa !important;
+    box-shadow: 0 5px 0 #f4e5e9;
+  }
+
+  #shopping-list article:nth-child(3n + 2) {
+    background: #f4f8ef !important;
+    border-color: #dce7d1 !important;
+    box-shadow: 0 5px 0 #e8efdf;
+  }
+
+  #shopping-list article:nth-child(3n) {
+    background: #f5f1fb !important;
+    border-color: #e4daef !important;
+    box-shadow: 0 5px 0 #ebe3f3;
+  }
+
+  #shopping-list article h3 {
+    margin: 0 0 14px;
+    font-size: 20px;
+    line-height: 1.5;
+  }
+
+  #shopping-list article h3::before {
+    content: "✦ ";
+    color: var(--pink);
+  }
+
+  #shopping-list article p {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  #shopping-list article p:first-of-type {
+    color: var(--pink);
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  #shopping-list article p:last-of-type {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #ffffffb3;
+    color: #654e72;
+  }
+
+  #shopping-list article button {
+    padding: 9px 13px !important;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+
+  #shopping-list article button:nth-child(2) {
+    background: #e3eedb;
+    color: #425e38;
+  }
+
+  #account-area {
+    width: 100%;
+    max-width: 480px;
+    margin: 36px auto 0 !important;
+    padding: 28px;
+    border: 1px solid #e4d9ed;
+    border-radius: 26px;
+    background: #f7f2fc;
+    box-shadow: 0 8px 28px #7358850a;
+  }
+
+  #account-area hr {
+    display: none;
+  }
+
+  #account-area h2::before {
+    content: "☁️ ";
+  }
+
+  #account-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  #account-form p {
+    grid-column: 1 / -1;
+    margin: 0;
+    text-align: left;
+  }
+
+  #account-form label {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  #account-form input {
+    margin-top: 7px;
+    background: white;
+  }
+
+  #account-form button:last-child {
+    background: #e8dff2;
+    color: #624c78;
+  }
+
+  #account-state,
+  #account-message,
+  #shopping-message,
+  #shopping-list-status {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+  }
+
+  #shopping-message:empty,
+  #shopping-list-status:empty,
+  #account-message:empty {
+    display: none;
+  }
+
+  @media (max-width: 600px) {
     body {
-      margin: 0;
-      padding: 80px 24px;
-      font-family: "Microsoft YaHei", sans-serif;
-      text-align: center;
-      background: #f3f6fc;
-      color: #1e293b;
+      padding: 32px 14px 48px;
     }
 
-    h1 {
-      color: #2563eb;
+    #shopping-area,
+    #account-area {
+      padding: 24px 18px;
+      border-radius: 22px;
     }
 
-    p {
-      line-height: 1.8;
+    #shopping-form {
+      padding: 18px;
     }
-  </style>
+
+    .hero {
+      margin-bottom: 32px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button {
+      transition: none;
+    }
+
+    button:hover:not(:disabled) {
+      transform: none;
+    }
+  }
+
+#account-form {
+  grid-template-columns: 1fr;
+}
+
+#account-form #login-button {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin-top: 6px;
+  padding: 15px 20px;
+  border-radius: 16px;
+  background: var(--pink);
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 4px;
+}
+
+#account-form #register-button {
+  grid-column: 1 / -1;
+  justify-self: end;
+  width: auto;
+  margin: 0;
+  padding: 6px 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #705780;
+  font-size: 13px;
+  font-weight: 400;
+  box-shadow: none;
+}
+
+#account-form #register-button:hover:not(:disabled) {
+  background: transparent;
+  transform: none;
+  box-shadow: none;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+</style>
 </head>
 <body>
+<header class="hero">
+  <span class="brand">🧸 购物冷静箱</span>
+
+  <h1>
+    喜欢可以先收藏，<br>
+    决定可以慢慢来。
+  </h1>
+
+  <p>收好每一次心动，给自己一点想清楚的时间。</p>
+
+  <span class="hero-note">
+    ✨ 登录后，打开属于自己的小箱子
+  </span>
+</header>
  <section
   id="shopping-area"
   hidden
@@ -99,8 +481,13 @@
       >
     </p>
 
-    <button type="submit" value="register">注册</button>
-    <button type="submit" value="login">登录</button>
+    <button id="login-button" type="submit">
+  登录
+</button>
+
+<button id="register-button" type="button">
+  没有账号？点击注册
+</button>
   </form>
 
   <button id="logout-button" type="button" hidden>退出登录</button>
@@ -185,9 +572,18 @@
     }
   }
 
-  form.addEventListener("submit", event => {
-    event.preventDefault();
-    handleAccount(event.submitter.value);
+ // 点击登录或按回车，都执行登录
+form.addEventListener("submit", event => {
+  event.preventDefault();
+  handleAccount("login");
+});
+
+// 注册只通过点击右下角文字触发
+document.getElementById("register-button")
+  .addEventListener("click", () => {
+    if (form.reportValidity()) {
+      handleAccount("register");
+    }
   });
 
   logoutButton.addEventListener("click", () => {
@@ -317,10 +713,93 @@ loadShoppingItems();
       );
       addShoppingText(card, "p", coolingTimeText(item));
 
-      shoppingList.appendChild(card);
+// 尚未做决定的商品显示两个按钮
+if (item.status === "cooling") {
+  const actions = document.createElement("div");
+
+  const choices = [
+    { text: "已购买", status: "bought" },
+    { text: "不想买了", status: "skipped" }
+  ];
+
+  choices.forEach(choice => {
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.textContent = choice.text;
+    button.style.cssText = "margin:4px 8px 4px 0;padding:8px 12px;";
+    button.disabled = pendingShoppingItems.has(item.id);
+
+    button.addEventListener("click", () => {
+      updateShoppingStatus(item.id, choice.status);
+    });
+
+    actions.appendChild(button);
+  });
+
+  card.appendChild(actions);
+}
+
+shoppingList.appendChild(card);
     });
   }
+// 记录正在保存的商品，防止重复点击
+const pendingShoppingItems = new Set();
 
+async function updateShoppingStatus(itemId, nextStatus) {
+  const owner = shoppingListUserId;
+
+  if (!owner || pendingShoppingItems.has(itemId)) return;
+  if (!["bought", "skipped"].includes(nextStatus)) return;
+
+  pendingShoppingItems.add(itemId);
+  renderShoppingItems();
+  shoppingListStatus.textContent = "正在保存你的决定……";
+
+  try {
+    const { data, error } = await client
+      .from("shopping_items")
+      .update({ status: nextStatus })
+      .eq("id", itemId)
+      .eq("user_id", owner)
+      .eq("status", "cooling")
+      .select("id, status");
+
+    // 保存期间若已切换账号，不改动当前界面
+    if (owner !== shoppingListUserId) return;
+
+    if (error) throw error;
+
+    if (!data || data.length !== 1) {
+      throw new Error("这条商品记录可能已经变化，请刷新网页后重试。");
+    }
+
+    // 数据库确认保存后，再更新卡片
+    savedItems = savedItems.map(item => {
+      if (item.id === itemId) {
+        return { ...item, status: data[0].status };
+      }
+
+      return item;
+    });
+
+    shoppingListStatus.textContent =
+      nextStatus === "bought"
+        ? "已记录：这件商品买下来了。"
+        : "已记录：这件商品已经不想买了。";
+  } catch (error) {
+    if (owner === shoppingListUserId) {
+      shoppingListStatus.textContent =
+        "保存未完成：" + error.message;
+    }
+  } finally {
+    pendingShoppingItems.delete(itemId);
+
+    if (owner === shoppingListUserId) {
+      renderShoppingItems();
+    }
+  }
+}
   // 从数据库读取当前账号的商品
   async function loadShoppingItems() {
     const owner = shoppingListUserId;
