@@ -24,17 +24,50 @@
   </style>
 </head>
 <body>
-  <h1>我的建站日记</h1>
-  <p>从一个空白页面开始，慢慢做出自己的东西。</p>
+ <section
+  id="shopping-area"
+  hidden
+  style="max-width: 420px; margin: 40px auto; text-align: left;"
+>
+  <h2>购物冷静箱</h2>
+  <p>把想买的东西放进来，三天后再做决定。</p>
 
-  <h2>第一天：网站上线了</h2>
-  <p>
-    今天，我创建了第一个网页，<br>
-    把它上传到 GitHub，并用 GitHub Pages 发布到了网上。
-  </p>
+  <form id="shopping-form" style="display: grid; gap: 12px;">
+    <label for="item-name">想买什么？</label>
+    <input
+      id="item-name"
+      type="text"
+      placeholder="例如：降噪耳机"
+      maxlength="120"
+      required
+    >
 
-  <h2>下一个小目标</h2>
-  <p>学会给网页添加一张自己喜欢的图片。</p>
+    <label for="item-price">价格（元）</label>
+    <input
+      id="item-price"
+      type="number"
+      placeholder="例如：299"
+      min="0"
+      max="9999999999.99"
+      step="0.01"
+      required
+    >
+
+    <label for="item-reason">为什么想买？</label>
+    <textarea
+      id="item-reason"
+      placeholder="它能解决什么问题？"
+      maxlength="2000"
+      rows="3"
+    ></textarea>
+
+    <button id="save-item-button" type="submit">
+      放进冷静箱
+    </button>
+  </form>
+
+  <p id="shopping-message" role="status"></p>
+</section>
 <section id="account-area" style="margin-top: 48px;">
   <hr>
   <h2>我的账号</h2>
@@ -156,6 +189,62 @@
 
   logoutButton.addEventListener("click", () => {
     handleAccount("logout");
+  });
+</script>
+<script>
+  const shoppingArea = document.getElementById("shopping-area");
+  const shoppingForm = document.getElementById("shopping-form");
+  const shoppingMessage = document.getElementById("shopping-message");
+  const saveItemButton = document.getElementById("save-item-button");
+
+  // 只有登录后才显示商品输入框
+  client.auth.onAuthStateChange((event, session) => {
+    shoppingArea.hidden = !session;
+
+    if (!session) {
+      shoppingForm.reset();
+      shoppingMessage.textContent = "";
+    }
+  });
+
+  shoppingForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    saveItemButton.disabled = true;
+    shoppingMessage.textContent = "正在保存……";
+
+    try {
+      const name = document.getElementById("item-name").value.trim();
+      const price = Number(document.getElementById("item-price").value);
+      const reason = document.getElementById("item-reason").value.trim();
+
+      if (!name) {
+        throw new Error("请填写商品名称。");
+      }
+
+      if (!Number.isFinite(price) || price < 0) {
+        throw new Error("请填写有效的价格。");
+      }
+
+      // 保存到 Supabase 的商品表
+      const { error } = await client
+        .from("shopping_items")
+        .insert({
+          name,
+          price,
+          reason
+        });
+
+      if (error) throw error;
+
+      shoppingForm.reset();
+      shoppingMessage.textContent =
+        "已放进冷静箱！这件商品的冷静期是三天。";
+    } catch (error) {
+      shoppingMessage.textContent = "保存未完成：" + error.message;
+    } finally {
+      saveItemButton.disabled = false;
+    }
   });
 </script>
 </body>
