@@ -73,6 +73,11 @@ button:active {
     box-shadow: 0 6px 14px #b9426525;
   }
 
+    /* Day 1：修复按钮按压动画 */
+button:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
   button:disabled {
     opacity: 0.55;
     cursor: wait;
