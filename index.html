@@ -6,7 +6,7 @@
   <title>购物冷静箱 · 给心动一点时间</title>
   <style>
 
-  /* Day 1：按钮点击反馈动画 */
+  /* 按钮点击反馈动画 */
 button {
     transition: transform 0.15s ease;
 }
@@ -14,6 +14,14 @@ button {
 button:active {
     transform: scale(0.96);
 }
+
+
+/* 优化键盘焦点提示 */
+button:focus-visible {
+    outline: 3px solid #22c55e;
+    outline-offset: 3px;
+}
+
     
   :root {
     --ink: #57434e;
