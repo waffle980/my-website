@@ -359,15 +359,19 @@ button:active:not(:disabled) {
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    button {
-      transition: none;
-    }
-
-    button:hover:not(:disabled) {
-      transform: none;
-    }
+  
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
   }
+
+  button:hover:not(:disabled),
+  button:active,
+  button:active:not(:disabled) {
+    transform: none;
+  }
+}
+
 
 #account-form {
   grid-template-columns: 1fr;
