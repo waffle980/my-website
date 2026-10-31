@@ -719,7 +719,10 @@ loadShoppingItems();
       addShoppingText(
         card,
         "p",
-        "价格：¥" + Number(item.price).toFixed(2)
+        "价格：¥" + Number(item.price).toLocaleString("zh-CN", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+})
       );
       addShoppingText(
         card,
